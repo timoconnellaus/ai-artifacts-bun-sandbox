@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "start-all": "bun run start.ts",
     "dev": "next dev --turbo",
     "build": "next build",
     "start": "next start",
