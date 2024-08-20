@@ -10,7 +10,6 @@ import {
 
 import { LanguageModelV1 } from "@ai-sdk/provider";
 import ratelimit from "@/lib/ratelimit";
-import { runPython, writeToPage, writeToApp } from "@/lib/sandbox";
 import { SandboxTemplate } from "@/lib/types";
 import { prompt as shadcnPrompt } from "@/lib/shadcn-prompt";
 import { getModelClient } from "@/lib/models";
@@ -91,13 +90,15 @@ export async function POST(req: Request) {
               tool: "renderTsxToHtml",
               state: "running",
             });
-            console.log("WILL WRITE");
-            const response = await fetch(`http://localhost:3001/get-url`, {
-              method: "POST",
-              body: code,
-            });
-            const { url } = await response.json();
-            console.log("WROTE", { url });
+
+            // console.log(code);
+            // console.log("WILL WRITE");
+            // const response = await fetch(`http://localhost:3001/get-url`, {
+            //   method: "POST",
+            //   body: code,
+            // });
+            // const { url } = await response.json();
+            // console.log("WROTE", { url });
 
             data.append({
               tool: "renderTsxToHtml",
@@ -105,7 +106,7 @@ export async function POST(req: Request) {
             });
 
             return {
-              url,
+              tsx: code,
               template,
             };
           },

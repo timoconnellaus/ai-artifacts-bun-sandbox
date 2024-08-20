@@ -1,9 +1,8 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Terminal } from "lucide-react";
 import { SandboxTemplate } from "@/lib/types";
-
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 function LogsOutput({
@@ -14,7 +13,6 @@ function LogsOutput({
   stderr: string[];
 }) {
   if (stdout.length === 0 && stderr.length === 0) return null;
-
   return (
     <div className="w-full h-32 max-h-32 overflow-y-auto flex flex-col items-start justify-start space-y-1 p-4 bg-[#F5F5F5] rounded">
       {stdout &&
@@ -36,7 +34,7 @@ function LogsOutput({
 }
 
 export interface CodeExecResult {
-  url: string;
+  tsx: string;
   stdout: string[];
   stderr: string[];
   runtimeError?: ExecutionError;
@@ -52,29 +50,52 @@ export function ArtifactView({
   template?: SandboxTemplate;
 }) {
   const [iframeKey, setIframeKey] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (template === SandboxTemplate.NextJS && result) {
-      const timer = setTimeout(() => {
-        setIframeKey((prevKey) => prevKey + 1);
-      }, 3000);
-
-      return () => clearTimeout(timer);
+    if (template === SandboxTemplate.ShadcnComponent && result) {
+      setIframeKey((prevKey) => prevKey + 1);
     }
   }, [template, result]);
 
+  // useEffect(() => {
+  //   const form = document.querySelector(
+  //     `form[target="iframe-${iframeKey}"]`,
+  //   ) as HTMLFormElement;
+  //   if (form) {
+  //     form.submit();
+  //   }
+  // }, [iframeKey]);
+
+  useEffect(() => {
+    if (formRef.current) {
+      formRef.current.submit();
+    }
+  }, [iframeKey]);
+
   if (!result) return null;
-  console.log("result", result);
 
   if (template === SandboxTemplate.ShadcnComponent) {
+    const decodedTsx = decodeURIComponent(result.tsx);
+
     return (
       <div className="w-full h-full">
+        <form
+          ref={formRef}
+          target={`iframe-${iframeKey}`}
+          method="post"
+          action="http://localhost:3001"
+          hidden={true}
+        >
+          <input type="hidden" name="tsx" value={decodedTsx} />
+        </form>
         <iframe
           key={iframeKey}
+          name={`iframe-${iframeKey}`}
           className="h-full w-full"
           sandbox="allow-scripts allow-same-origin"
           loading="lazy"
-          src={result.url}
+          src=""
         />
       </div>
     );

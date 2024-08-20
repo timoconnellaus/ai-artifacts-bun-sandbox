@@ -1,44 +1,56 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useChat } from 'ai/react'
-import { useLocalStorage } from 'usehooks-ts'
+import { useState } from "react";
+import { useChat } from "ai/react";
+import { useLocalStorage } from "usehooks-ts";
 
-import { Chat } from '@/components/chat'
-import { SideView } from '@/components/side-view'
-import { SandboxTemplate } from '@/lib/types'
-import NavBar from '@/components/navbar'
+import { Chat } from "@/components/chat";
+import { SideView } from "@/components/side-view";
+import { SideViewOnDemand } from "@/components/side-view-on-demand";
+import { SandboxTemplate } from "@/lib/types";
+import NavBar from "@/components/navbar";
 
-import { supabase } from '@/lib/supabase'
-import { AuthDialog } from '@/components/AuthDialog'
-import { useAuth } from '@/lib/auth'
+import { supabase } from "@/lib/supabase";
+import { AuthDialog } from "@/components/AuthDialog";
+import { useAuth } from "@/lib/auth";
 
-import { LLMModel, LLMModelConfig } from '@/lib/models'
-import modelsList from '@/lib/models.json'
+import { LLMModel, LLMModelConfig } from "@/lib/models";
+import modelsList from "@/lib/models.json";
+import { ToolInvocation } from "ai";
 
 export default function Home() {
-  const [chatInput, setChatInput] = useLocalStorage('chat', '')
-  const [selectedTemplate, setSelectedTemplate] = useLocalStorage('template', SandboxTemplate.CodeInterpreterMultilang)
-  // reduce this to only fields needed
-  const [languageModel, setLanguageModel] = useLocalStorage<LLMModelConfig>('languageModel', {
-    model: 'claude-3-5-sonnet-20240620'
-  })
+  const [chatInput, setChatInput] = useLocalStorage("chat", "");
+  const [toolInvocation, setToolInvocation] = useState<ToolInvocation>();
 
-  const [isAuthDialogOpen, setAuthDialog] = useState(false)
-  const { session, apiKey } = useAuth(setAuthDialog)
+  const [selectedTemplate, setSelectedTemplate] = useLocalStorage(
+    "template",
+    SandboxTemplate.CodeInterpreterMultilang,
+  );
+  // reduce this to only fields needed
+  const [languageModel, setLanguageModel] = useLocalStorage<LLMModelConfig>(
+    "languageModel",
+    {
+      model: "claude-3-5-sonnet-20240620",
+    },
+  );
+
+  const [isAuthDialogOpen, setAuthDialog] = useState(false);
+  const { session, apiKey } = useAuth(setAuthDialog);
 
   const filteredModels = modelsList.models.filter((model: LLMModel) => {
-    if (process.env.NEXT_PUBLIC_USE_HOSTED_MODELS === 'true') {
-      return model.hosted
+    if (process.env.NEXT_PUBLIC_USE_HOSTED_MODELS === "true") {
+      return model.hosted;
     }
 
-    return true
-  })
+    return true;
+  });
 
-  const currentModel = filteredModels.find((model: LLMModel) => model.id === languageModel.model)
+  const currentModel = filteredModels.find(
+    (model: LLMModel) => model.id === languageModel.model,
+  );
 
   const { messages, handleInputChange, handleSubmit, data } = useChat({
-    api: '/api/chat',
+    api: "/api/chat",
     body: {
       userID: session?.user?.id,
       template: selectedTemplate,
@@ -46,41 +58,57 @@ export default function Home() {
       config: languageModel,
       apiKey,
     },
-  })
-  console.log({ messages, data })
+  });
+  console.log({ messages, data });
   // For simplicity, we care only about the latest message that has a tool invocation
-  const latestMessageWithToolInvocation = [...messages].reverse().find(message => message.toolInvocations && message.toolInvocations.length > 0)
+  const latestMessageWithToolInvocation = [...messages]
+    .reverse()
+    .find(
+      (message) =>
+        message.toolInvocations && message.toolInvocations.length > 0,
+    );
   // Get the latest tool invocation
-  const latestToolInvocation = latestMessageWithToolInvocation?.toolInvocations?.[0]
+  const latestToolInvocation =
+    latestMessageWithToolInvocation?.toolInvocations?.[0];
 
-  function handleSubmitAuth (e: React.FormEvent<HTMLFormElement>) {
+  function handleSubmitAuth(e: React.FormEvent<HTMLFormElement>) {
     if (!session) {
-      e.preventDefault()
-      return setAuthDialog(true)
+      e.preventDefault();
+      return setAuthDialog(true);
     }
 
-    handleSubmit(e)
-    setChatInput('')
+    handleSubmit(e);
+    setChatInput("");
   }
 
-  function handleSaveInputChange (e: React.ChangeEvent<HTMLInputElement>) {
-    handleInputChange(e)
-    setChatInput(e.target.value)
+  function handleSaveInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    handleInputChange(e);
+    setChatInput(e.target.value);
   }
 
-  function logout () {
-    supabase ? supabase.auth.signOut() : console.warn('Supabase is not initialized')
+  function logout() {
+    supabase
+      ? supabase.auth.signOut()
+      : console.warn("Supabase is not initialized");
   }
 
-  function handleLanguageModelChange (e: LLMModelConfig) {
-    setLanguageModel({ ...languageModel, ...e })
+  function handleLanguageModelChange(e: LLMModelConfig) {
+    setLanguageModel({ ...languageModel, ...e });
+  }
+
+  function handleUpdateSideview(props: { toolInvocation: ToolInvocation }) {
+    setToolInvocation(props.toolInvocation);
   }
 
   return (
     <main className="flex min-h-screen max-h-screen">
-      {
-        supabase && <AuthDialog open={isAuthDialogOpen} setOpen={setAuthDialog} supabase={supabase} />
-      }
+      {supabase && (
+        <AuthDialog
+          open={isAuthDialogOpen}
+          setOpen={setAuthDialog}
+          supabase={supabase}
+        />
+      )}
       <NavBar
         session={session}
         showLogin={() => setAuthDialog(true)}
@@ -99,13 +127,14 @@ export default function Home() {
           input={chatInput}
           handleInputChange={handleSaveInputChange}
           handleSubmit={handleSubmitAuth}
+          handleUpdateSideview={handleUpdateSideview}
         />
-        <SideView
-          toolInvocation={latestToolInvocation}
+        <SideViewOnDemand
+          toolInvocation={toolInvocation}
           data={data}
           selectedTemplate={selectedTemplate}
         />
       </div>
     </main>
-  )
+  );
 }
