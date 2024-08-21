@@ -53,7 +53,11 @@ export function ArtifactView({
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (template === SandboxTemplate.ShadcnComponent && result) {
+    if (
+      (template === SandboxTemplate.ShadcnComponent ||
+        template === SandboxTemplate.DaisyUIComponent) &&
+      result
+    ) {
       setIframeKey((prevKey) => prevKey + 1);
     }
   }, [template, result]);
@@ -75,7 +79,10 @@ export function ArtifactView({
 
   if (!result) return null;
 
-  if (template === SandboxTemplate.ShadcnComponent) {
+  if (
+    template === SandboxTemplate.ShadcnComponent ||
+    template === SandboxTemplate.DaisyUIComponent
+  ) {
     const decodedTsx = decodeURIComponent(result.tsx);
 
     return (

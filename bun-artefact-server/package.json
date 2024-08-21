@@ -8,7 +8,8 @@
   "devDependencies": {
     "@types/babel-core": "^6.25.10",
     "@types/babel__core": "^7.20.5",
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "daisyui": "^4.12.10"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"

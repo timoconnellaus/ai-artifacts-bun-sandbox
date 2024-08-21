@@ -11,7 +11,8 @@ import {
 import { LanguageModelV1 } from "@ai-sdk/provider";
 import ratelimit from "@/lib/ratelimit";
 import { SandboxTemplate } from "@/lib/types";
-import { prompt as shadcnPrompt } from "@/lib/shadcn-prompt";
+import { prompt as shadcnPrompt } from "@/lib/prompts/shadcn-prompt";
+import { prompt as daisyuiPrompt } from "@/lib/prompts/daisyui-prompt";
 import { getModelClient } from "@/lib/models";
 import { LLMModel, LLMModelConfig } from "@/lib/models";
 
@@ -113,6 +114,53 @@ export async function POST(req: Request) {
         }),
       },
       system: shadcnPrompt,
+      messages,
+      ...modelConfig,
+    });
+  } else if (template === SandboxTemplate.DaisyUIComponent) {
+    result = await streamText({
+      model: modelClient as LanguageModelV1,
+      tools: {
+        writeCodeToPageTsx: tool({
+          description:
+            "Renders a TSX component to HTML. You can use tailwind classes and daisyui.",
+          parameters: z.object({
+            title: z
+              .string()
+              .describe("Short title (5 words max) of the artifact."),
+            description: z
+              .string()
+              .describe("Short description (10 words max) of the artifact."),
+            code: z.string().describe("The TSX code to write."),
+          }),
+          async execute({ code }) {
+            data.append({
+              tool: "renderTsxToHtml",
+              state: "running",
+            });
+
+            // console.log(code);
+            // console.log("WILL WRITE");
+            // const response = await fetch(`http://localhost:3001/get-url`, {
+            //   method: "POST",
+            //   body: code,
+            // });
+            // const { url } = await response.json();
+            // console.log("WROTE", { url });
+
+            data.append({
+              tool: "renderTsxToHtml",
+              state: "complete",
+            });
+
+            return {
+              tsx: code,
+              template,
+            };
+          },
+        }),
+      },
+      system: daisyuiPrompt,
       messages,
       ...modelConfig,
     });

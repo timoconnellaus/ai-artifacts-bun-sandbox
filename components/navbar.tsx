@@ -107,6 +107,9 @@ export default function NavBar({
                 <SelectItem value="shadcn-component">
                   Shadcn component
                 </SelectItem>
+                <SelectItem value="daisyui-component">
+                  DaisyUI component
+                </SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>

@@ -4,16 +4,18 @@ import { $, file } from "bun";
 
 const tmpPath = `${import.meta.dirname}/../../tmp`;
 
-const transpiler = new Bun.Transpiler({
-  loader: "tsx",
-  tsconfig: { compilerOptions: { jsx: "react" } },
-});
-
 export async function renderComponent(code: string): Promise<string> {
   const tempFileName = `${tmpPath}/${Date.now()}.js`;
 
   try {
-    const jsCode = await transpiler.transform(code, "tsx");
+    const transpiler = new Bun.Transpiler({
+      loader: "tsx",
+      tsconfig: { compilerOptions: { jsx: "react" } },
+    });
+
+    const jsCode = transpiler.transformSync(code, "tsx");
+
+    console.log(jsCode);
 
     await Bun.write(tempFileName, jsCode);
 

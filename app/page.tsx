@@ -24,7 +24,7 @@ export default function Home() {
 
   const [selectedTemplate, setSelectedTemplate] = useLocalStorage(
     "template",
-    SandboxTemplate.CodeInterpreterMultilang,
+    SandboxTemplate.ShadcnComponent,
   );
   // reduce this to only fields needed
   const [languageModel, setLanguageModel] = useLocalStorage<LLMModelConfig>(
