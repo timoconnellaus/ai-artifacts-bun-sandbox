@@ -3,7 +3,7 @@ This app is an open source version of [Anthropic's Artifacts UI](https://www.ant
 
 This app is forked from https://github.com/e2b-dev/ai-artifacts and replaces the e2b-dev/code-interpreter sandbox with a custom one that uses [Bun](https://bun.sh/) transpiler.
 
-![Preview](preview.png)
+![Preview](<img width="1721" alt="image" src="https://github.com/user-attachments/assets/f15b3a99-0e4c-4069-bf74-1652ae5d2806">)
 
 ## Features
 - [Anthropic Claude Sonnet 3.5](https://www.anthropic.com/) model for AI code generation
